@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react'
 import { ActionCableConsumer } from "@thrash-industries/react-actioncable-provider";
+import { Alert, Button, Col, Container, FormControl, InputGroup, Row } from 'react-bootstrap';
 
 class App extends React.Component {
   constructor(props) {
@@ -31,42 +32,54 @@ class App extends React.Component {
   }
 
   mapMessages = () => {
-    return this.state.messages.map((message, i) => 
-      <li key={i}>{message.content}</li>)
+    return this.state.messages.map((message, i) => <Row><Col><Alert key={message.id} variant="info">{message.content}</Alert></Col></Row>)
   }
 
-  handleMessageSubmit = e => {
-    e.preventDefault();
-    const messageObj = {
-      message: {
-        content: e.target.message.value,
-        room_id: this.state.room_id
+  handleMessageSubmit = () => {
+    if (this.state.new_message) {
+      const messageObj = {
+        message: {
+          content: this.state.new_message,
+          room_id: this.state.room_id
+        }
       }
+      const fetchObj = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(messageObj)
+      }
+      fetch('http://localhost:3000/messages', fetchObj)
+      this.setState({new_message: ""})
     }
-    const fetchObj = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(messageObj)
-    }
-    fetch('http://localhost:3000/messages', fetchObj)
-    e.target.reset()
   }
 
   render() {
     return (
       <div className="App">
-        <ActionCableConsumer
-          channel={{ channel: 'MessagesChannel', room: this.state.room_id }}
-          onReceived={this.handleReceivedMessage}>
-            <h2>Messages</h2>
-            <ul>{this.mapMessages()}</ul>
-        </ActionCableConsumer>
-        <form onSubmit={this.handleMessageSubmit}>
+        <Container fluid="sm">
+          <Row>
+            <Col>
+              <ActionCableConsumer channel={{ channel: 'MessagesChannel', room: this.state.room_id }} onReceived={this.handleReceivedMessage}>
+                  <h2>Messages</h2>
+                  {this.mapMessages()}
+              </ActionCableConsumer>            
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <InputGroup class="mb-3">
+                <FormControl value={this.state.new_message ? this.state.new_message : ""} onChange={(e) => this.setState({new_message: e.target.value})} placeholder="New message..." aria-label="New message" aria-describedby="basic-addon2" />
+                <Button variant="outline-secondary" id="button-addon2" onClick={() => this.handleMessageSubmit()}>Submit</Button>
+              </InputGroup>
+            </Col>
+          </Row>
+        </Container>
+        {/* <form onSubmit={this.handleMessageSubmit}>
           <input name='message' type='text' />
           <input type='submit' value='Send message' />
-        </form>
+        </form> */}
       </div>
     );
   }
