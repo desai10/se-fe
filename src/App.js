@@ -1,13 +1,16 @@
 import logo from './logo.svg';
 import './App.css';
 import React from 'react'
-import { ActionCable } from 'react-actioncable-provider';
+import { ActionCableConsumer } from "@thrash-industries/react-actioncable-provider";
 
 class App extends React.Component {
-  constructor() {
-    super()
+  constructor(props) {
+    super(props)
+    const { roomid } = this.props;
     this.state = {
-      messages: []
+      title: '',
+      messages: [],
+      room_id: roomid
     }
   }
 
@@ -16,13 +19,15 @@ class App extends React.Component {
   };
 
   fetchMessages = () => {
-    fetch('http://localhost:3000/messages')
+    fetch('http://localhost:3000/room/' + this.state.room_id)
       .then(res => res.json())
-      .then(messages => this.setState({ messages: messages }))
+      .then(room => {
+        this.setState({ messages: room.messages, title: room.title })
+      })
   }
 
-  handleReceivedMessage = message => {
-    this.setState({ messages: [...this.state.messages, message] })
+  handleReceivedMessage = nm => {
+    this.setState({ messages: [...this.state.messages, nm.message] })
   }
 
   mapMessages = () => {
@@ -34,7 +39,8 @@ class App extends React.Component {
     e.preventDefault();
     const messageObj = {
       message: {
-        content: e.target.message.value
+        content: e.target.message.value,
+        room_id: this.state.room_id
       }
     }
     const fetchObj = {
@@ -51,12 +57,12 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <ActionCable
-          channel={{ channel: 'MessagesChannel' }}
-          onReceived={this.handleReceivedMessage}
-        />
-        <h2>Messages</h2>
-        <ul>{this.mapMessages()}</ul>
+        <ActionCableConsumer
+          channel={{ channel: 'MessagesChannel', room: this.state.room_id }}
+          onReceived={this.handleReceivedMessage}>
+            <h2>Messages</h2>
+            <ul>{this.mapMessages()}</ul>
+        </ActionCableConsumer>
         <form onSubmit={this.handleMessageSubmit}>
           <input name='message' type='text' />
           <input type='submit' value='Send message' />

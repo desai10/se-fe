@@ -1,14 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { ActionCableProvider } from 'react-actioncable-provider';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import './index.css';
 import App from './App';
+import Home from './Home';
 import reportWebVitals from './reportWebVitals';
+import AppWrapper from './AppWrapper';
 
 ReactDOM.render(
-  <ActionCableProvider url={'ws://localhost:3000/cable'}>
-    <App />
-  </ActionCableProvider>,
+  <Router>
+    <Switch>
+      <Route exact path='/room/:roomid' render={(props) => <AppWrapper {...props} /> } />
+      <Route>
+        <Home />
+      </Route>
+    </Switch>
+  </Router>,
   document.getElementById('root')
 );
 
