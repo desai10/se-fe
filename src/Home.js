@@ -1,4 +1,6 @@
 import React from 'react'
+import consts from './Constants';
+import { withRouter } from "react-router-dom";
 
 class Home extends React.Component {
 
@@ -16,12 +18,12 @@ class Home extends React.Component {
           },
           body: JSON.stringify(messageObj)
         }
-        fetch('http://localhost:3000/room', fetchObj)
+        fetch(consts.API_BASE + '/room', fetchObj)
             .then(res => res.json())
             .then(r => {
                 if (r.id != null) {
                     console.log(r.id)
-                    this.setState({ redirect: "/room/" + r.id });
+                    this.props.history.push('/room/' + r.id);
                 }
             })
         e.target.reset()
@@ -40,4 +42,4 @@ class Home extends React.Component {
     }
 }
 
-export default Home;
+export default withRouter(Home);

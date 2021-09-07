@@ -1,0 +1,32 @@
+div#modal {
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    background-color: #000 bf;
+    width: 100%;
+    z-index: 2;
+}
+div#modal > div {
+    width: 300px;
+    background: white;
+    margin: auto;
+    padding: 30px;
+    text-align: center;
+    height: 150px;
+    border-radius: 10px;
+}
+div#modal > div input {
+    height: 30px;
+    border-radius: 10px;
+    border: 2px dotted rebeccapurple;
+    width: 100%;
+    margin-bottom: 10px;
+}
+div#modal > div button {
+    height: 35px;
+    border-radius: 20px;
+    border: 0;
+    background-color: #673ab7;
+    color: white;
+    width: 80px;
+}

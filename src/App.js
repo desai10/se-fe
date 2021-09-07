@@ -1,8 +1,11 @@
-import logo from './logo.svg';
 import './App.css';
 import React from 'react'
 import { ActionCableConsumer } from "@thrash-industries/react-actioncable-provider";
 import { Alert, Button, Col, Container, FormControl, InputGroup, Row } from 'react-bootstrap';
+import Editor from './Editor';
+import consts from './Constants';
+import UsernameModel from './UsernameModel';
+import Cookies from 'js-cookie';
 
 class App extends React.Component {
   constructor(props) {
@@ -11,7 +14,10 @@ class App extends React.Component {
     this.state = {
       title: '',
       messages: [],
-      room_id: roomid
+      room_id: roomid,
+      username: Cookies.get('username'),
+      user_id: Cookies.get('user_id'),
+      client_id: Cookies.get('client_id')
     }
   }
 
@@ -20,7 +26,7 @@ class App extends React.Component {
   };
 
   fetchMessages = () => {
-    fetch('http://localhost:3000/room/' + this.state.room_id)
+    fetch(consts.API_BASE + '/room/' + this.state.room_id)
       .then(res => res.json())
       .then(room => {
         this.setState({ messages: room.messages, title: room.title })
@@ -40,7 +46,8 @@ class App extends React.Component {
       const messageObj = {
         message: {
           content: this.state.new_message,
-          room_id: this.state.room_id
+          room_id: this.state.room_id,
+          user_id: this.state.user_id
         }
       }
       const fetchObj = {
@@ -50,29 +57,50 @@ class App extends React.Component {
         },
         body: JSON.stringify(messageObj)
       }
-      fetch('http://localhost:3000/messages', fetchObj)
+      fetch(consts.API_BASE + 'messages', fetchObj)
       this.setState({new_message: ""})
     }
+  }
+
+  updateUserFromCookies = () => {
+    this.setState({
+      username: Cookies.get('username'),
+      user_id: Cookies.get('user_id'),
+      client_id: Cookies.get('client_id')      
+    })
   }
 
   render() {
     return (
       <div className="App">
-        <Container fluid="sm">
+        {(this.state.user_id == null) && <UsernameModel />}
+        <Container fluid>
           <Row>
             <Col>
-              <ActionCableConsumer channel={{ channel: 'MessagesChannel', room: this.state.room_id }} onReceived={this.handleReceivedMessage}>
-                  <h2>Messages</h2>
-                  {this.mapMessages()}
-              </ActionCableConsumer>            
+              <h1>{this.state.title}</h1>
             </Col>
           </Row>
           <Row>
-            <Col>
-              <InputGroup class="mb-3">
-                <FormControl value={this.state.new_message ? this.state.new_message : ""} onChange={(e) => this.setState({new_message: e.target.value})} placeholder="New message..." aria-label="New message" aria-describedby="basic-addon2" />
-                <Button variant="outline-secondary" id="button-addon2" onClick={() => this.handleMessageSubmit()}>Submit</Button>
-              </InputGroup>
+            <Col sm={8}>
+              <Editor />
+            </Col>
+            <Col sm={4}>
+              <Row>
+                <Col>
+                  <ActionCableConsumer channel={{ channel: 'MessagesChannel', room: this.state.room_id }} onReceived={this.handleReceivedMessage}>
+                      <h2>Messages</h2>
+                      {this.mapMessages()}
+                  </ActionCableConsumer>            
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <InputGroup class="mb-3">
+                    <FormControl value={this.state.new_message ? this.state.new_message : ""} onChange={(e) => this.setState({new_message: e.target.value})} placeholder="New message..." aria-label="New message" aria-describedby="basic-addon2" />
+                    <Button variant="outline-secondary" id="button-addon2" onClick={() => this.handleMessageSubmit()}>Submit</Button>
+                  </InputGroup>
+                </Col>
+              </Row>
             </Col>
           </Row>
         </Container>
