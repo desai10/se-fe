@@ -8,7 +8,7 @@ COPY package*.json ./
 RUN yarn install
 
 COPY . .
-ENV API_BASE=http://143.244.128.12:3000/ WS_BASE=ws://143.244.128.12:3000/cable
+ENV REACT_APP_API_BASE=http://143.244.128.12:3000/ REACT_APP_WS_BASE=ws://143.244.128.12:3000/cable
 # RUN yarn build
 CMD ["yarn", "start"]
 
