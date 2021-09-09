@@ -8,7 +8,7 @@ COPY package*.json ./
 RUN yarn install
 
 COPY . .
-ENV API_BASE=http://10.176.5.170:3000/ WS_BASE=ws://10.176.5.170:3000/cable
+ENV API_BASE=http://143.244.128.12:3000/ WS_BASE=ws://143.244.128.12:3000/cable
 # RUN yarn build
 CMD ["yarn", "start"]
 
@@ -22,7 +22,7 @@ CMD ["yarn", "start"]
 # COPY --from=builder --chown=node:node /usr/app/node_modules ./node_modules
 # COPY --from=builder --chown=node:node /usr/app/build ./build
 
-# ENV API_BASE=http://10.176.5.170:3000/ WS_BASE=ws://10.176.5.170:3000/cable
+# ENV API_BASE=http://143.244.128.12:3000/ WS_BASE=ws://143.244.128.12:3000/cable
 
 # EXPOSE 5000
 # USER node
