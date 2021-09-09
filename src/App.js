@@ -6,6 +6,10 @@ import Editor from './Editor';
 import consts from './Constants';
 import UsernameModel from './UsernameModel';
 import Cookies from 'js-cookie';
+import AceEditor from "react-ace";
+
+import "ace-builds/src-noconflict/mode-java";
+import "ace-builds/src-noconflict/theme-github";
 
 class App extends React.Component {
   constructor(props) {
@@ -14,11 +18,14 @@ class App extends React.Component {
     this.state = {
       title: '',
       messages: [],
+      editor_text: '',
       room_id: roomid,
       username: Cookies.get('username'),
       user_id: Cookies.get('user_id'),
       client_id: Cookies.get('client_id')
     }
+
+    this.onChange = this.onChange.bind(this);
   }
 
   componentDidMount() {
@@ -29,7 +36,7 @@ class App extends React.Component {
     fetch(consts.API_BASE + '/room/' + this.state.room_id)
       .then(res => res.json())
       .then(room => {
-        this.setState({ messages: room.messages, title: room.title })
+        this.setState({ messages: room.messages, title: room.title, editor_text: room.editor_text })
       })
   }
 
@@ -70,6 +77,31 @@ class App extends React.Component {
     })
   }
 
+  handleEditorTextChange = nt => {
+    console.log(nt.room.editor_text)
+    this.setState({editor_text: nt.room.editor_text})
+  }
+
+  onChange = (newValue) => {
+    console.log("change", newValue);
+    this.setState({editor_text: newValue})
+    if (newValue) {
+      const editorTextObj = {
+        room: {
+          editor_text: newValue
+        }
+      }
+      const fetchObj = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editorTextObj)
+      }
+      fetch(consts.API_BASE + 'room/' + this.state.room_id, fetchObj)
+    }
+  }
+
   render() {
     return (
       <div className="App">
@@ -82,7 +114,29 @@ class App extends React.Component {
           </Row>
           <Row>
             <Col sm={8}>
-              <Editor />
+              <ActionCableConsumer channel={{ channel: 'EditorTextChannel', room: this.state.room_id }} onReceived={this.handleEditorTextChange}>
+                <AceEditor
+                  mode="java"
+                  theme="github"
+                  onChange={this.onChange}
+                  name="UNIQUE_ID_OF_DIV"
+                  fontSize={14}
+                  value={this.state.editor_text}
+                  showPrintMargin={true}
+                  showGutter={true}
+                  width='100%'
+                  highlightActiveLine={true}                
+                  editorProps={{ $blockScrolling: true }}
+                  setOptions={{
+                      enableBasicAutocompletion: false,
+                      enableLiveAutocompletion: false,
+                      enableSnippets: false,
+                      showLineNumbers: true,
+                      tabSize: 4,
+                  }}
+                />
+                {/* <Editor editor_text={this.state.editor_text}/> */}
+              </ActionCableConsumer>
             </Col>
             <Col sm={4}>
               <Row>
@@ -90,7 +144,7 @@ class App extends React.Component {
                   <ActionCableConsumer channel={{ channel: 'MessagesChannel', room: this.state.room_id }} onReceived={this.handleReceivedMessage}>
                       <h2>Messages</h2>
                       {this.mapMessages()}
-                  </ActionCableConsumer>            
+                  </ActionCableConsumer>
                 </Col>
               </Row>
               <Row>
